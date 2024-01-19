@@ -1,0 +1,374 @@
+KorisnikRepository
+
+using DataLayer.Models;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataLayer
+{
+    public class KorisnikRepository
+    {
+        public virtual int InsertKorisnik(Korisnik korisnik)
+        {
+            using(SqlConnection sqlConnection=new SqlConnection(Konekcija.connString))
+            {
+                sqlConnection.Open();
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlCommand.Connection=sqlConnection;
+                sqlCommand.CommandText=string.Format("INSERT INTO Korisnici VALUES ('{0}', '{1}', '{2}', '{3}', {4}, '{5}', '{6}', '{7}')", korisnik.Ime, korisnik.Prezime, korisnik.Adresa, korisnik.Telefon, korisnik.Racun, korisnik.Username, korisnik.Password, korisnik.Email);
+                return sqlCommand.ExecuteNonQuery();
+            }
+
+        }
+
+        public virtual List<Korisnik> GetAllKorisnik() {
+            List<Korisnik> listaKorisnika=new List<Korisnik>();
+
+            using(SqlConnection sqlConnection=new SqlConnection(Konekcija.connString))
+            {
+                sqlConnection.Open();
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlCommand.Connection=sqlConnection;
+                sqlCommand.CommandText = "SELECT* FROM Korisnici";
+
+                SqlDataReader dataReader = sqlCommand.ExecuteReader();
+
+                while(dataReader.Read())
+                {
+                    Korisnik k = new Korisnik();
+                    k.Id = dataReader.GetInt32(0);
+                    k.Ime = dataReader.GetString(1);
+                    k.Prezime=dataReader.GetString(2);
+                    k.Adresa = dataReader.GetString(3);
+                    k.Telefon = dataReader.GetString(4);
+                    k.Racun=dataReader.GetDecimal(5);
+                    k.Username = dataReader.GetString(6);
+                    k.Password= dataReader.GetString(7);
+                    k.Email= dataReader.GetString(8);
+
+                    listaKorisnika.Add(k);
+                }
+            }
+            return listaKorisnika;
+        }
+
+        public virtual int UpdateKorisnik(Korisnik korisnik)
+        {
+            using (SqlConnection sqlConnection = new SqlConnection(Konekcija.connString))
+            {
+                sqlConnection.Open();
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = string.Format("UPDATE Korisnici SET Racun={0} WHERE Id = {1}", korisnik.Racun, korisnik.Id);
+                return sqlCommand.ExecuteNonQuery();
+            }
+
+        }
+
+    }
+}
+
+CasRepository
+
+using DataLayer.Models;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataLayer
+{
+    public class CajRepository
+    {
+        public virtual List<Caj> GetAllCaj()
+        {
+            List<Caj> listaCaj=new List<Caj>();
+
+            using(SqlConnection sqlConnection=new SqlConnection(Konekcija.connString))
+            {
+                sqlConnection.Open();
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = "SELECT * FROM Cajevi";
+
+                SqlDataReader reader = sqlCommand.ExecuteReader();
+                while (reader.Read())
+                {
+                    Caj caj = new Caj();
+                    caj.Id_caja=reader.GetInt32(0);
+                    caj.Naziv=reader.GetString(1);
+                    caj.Tip=reader.GetString(2);
+                    caj.Cena=reader.GetDecimal(3);
+                    caj.Kolicina = reader.GetInt32(4);
+                    caj.Proizvodjac = reader.GetString(5);
+                    caj.Opis= reader.GetString(6);
+                    listaCaj.Add(caj);
+                }
+            }
+            return listaCaj;
+        }
+
+        public virtual int InsertCaj(Caj caj)
+        {
+            using (SqlConnection sqlConnection = new SqlConnection(Konekcija.connString))
+            {
+                sqlConnection.Open();
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = "INSERT INTO Cajevi (Naziv, Tip, Cena, Kolicina, Proizvodjac, Opis) VALUES(@Naziv, @Tip, @Cena, @Kolicina, @Proizvodjac, @Opis)";
+                sqlCommand.Parameters.AddWithValue("@Naziv", caj.Naziv);
+                sqlCommand.Parameters.AddWithValue("@Tip", caj.Tip);
+                sqlCommand.Parameters.AddWithValue("@Cena", caj.Cena);
+                sqlCommand.Parameters.AddWithValue("@Kolicina", caj.Kolicina);
+                sqlCommand.Parameters.AddWithValue("@Proizvodjac", caj.Proizvodjac);
+                sqlCommand.Parameters.AddWithValue("@Opis", caj.Opis);
+
+
+                return sqlCommand.ExecuteNonQuery();
+            }
+        }
+
+        public virtual int UpdateCaj(Caj caj)
+        {
+            using (SqlConnection sqlConnection = new SqlConnection(Konekcija.connString))
+            {
+                sqlConnection.Open();
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = string.Format("UPDATE Cajevi SET Kolicina={0} WHERE Id_caja={1}",  caj.Kolicina, caj.Id_caja);
+                return sqlCommand.ExecuteNonQuery();
+            }
+        }
+
+       
+
+        public virtual int DeleteCaj(Caj caj)
+        {
+            using (SqlConnection sqlConnection = new SqlConnection(Konekcija.connString))
+            {
+                sqlConnection.Open();
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = string.Format("DELETE FROM Cajevi WHERE Id_caja="+caj.Id_caja);
+                return sqlCommand.ExecuteNonQuery();
+            }
+        }
+
+    }
+
+   
+}
+
+
+Konekcija
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataLayer
+{
+    internal class Konekcija
+    {
+        public static string connString = "Data Source=(localdb)\\ProjectModels;Initial Catalog=CajeviBP;Connect Timeout=30;Encrypt=False";
+    }
+}
+
+
+KorisnikBusiness
+
+using DataLayer;
+using DataLayer.Models;
+using Moq;
+using System.Collections.Generic;
+
+
+namespace BussinesLayer
+{
+    public class KorisnikBusiness
+    {
+        private readonly KorisnikRepository korisnikRepository;
+
+        public KorisnikBusiness(KorisnikRepository @object)0
+        {
+            this.korisnikRepository= new KorisnikRepository();
+        }
+
+        public KorisnikBusiness()
+        {
+            this.korisnikRepository = new KorisnikRepository();
+        }
+
+        public bool logIn(string username, string password)
+        {
+            List<Korisnik> lista = this.korisnikRepository.GetAllKorisnik();
+
+            bool pom = false;
+            foreach(Korisnik k in lista)
+            {
+                if (k.Email == username && k.Password == password)
+                {
+                    pom = true;
+                    
+                }
+            }
+            return pom;
+        }
+
+        public List<Korisnik> GetAllKor()
+        {
+            return this.korisnikRepository.GetAllKorisnik();
+        }
+
+        public bool UpdateKor(Korisnik k)
+        {
+            if (this.korisnikRepository.UpdateKorisnik(k) > 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+
+        public bool insertKorisnika(Korisnik k) {
+            if (this.korisnikRepository.InsertKorisnik(k) > 0)
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    
+}
+
+KorpaBusiness
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using DataLayer;
+using DataLayer.Models;
+
+namespace BussinesLayer
+{
+    public class KorpaBusiness
+    {
+        private readonly KorisnikRepository korisnikRepository;
+        private readonly CajRepository cajRepository;
+
+        public KorpaBusiness(CajRepository @object)
+        {
+            this.korisnikRepository = new KorisnikRepository();
+            this.cajRepository = new CajRepository();
+        }
+        public virtual bool Dodaj(Caj c)
+        {
+
+            if (this.cajRepository.InsertCaj(c) > 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public virtual List<Caj> ListaCajeva()
+        {
+            return this.cajRepository.GetAllCaj();
+        }
+
+        public virtual bool ObrisiCaj(Caj c)
+        {
+            if (this.cajRepository.DeleteCaj(c) > 0)
+            {
+                return true;
+            }
+            return false;
+        } 
+
+        public virtual bool UpdateCaj(Caj c)
+        {
+            if (this.cajRepository.UpdateCaj(c) > 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        bool pom, pom1;
+        public virtual bool ObrisiSve(string k, decimal uk)
+        {
+            List<Caj> lista = this.cajRepository.GetAllCaj();
+            List<Korisnik> listaK = this.korisnikRepository.GetAllKorisnik();
+
+            pom1 = false; // Postavljamo pom1 na false na početku
+            foreach (Korisnik kor in listaK)
+            {
+                if (k == kor.Email && kor.Racun >= uk)
+                {
+                    pom1 = true; // Postavljamo na true samo ako pronađemo odgovarajućeg korisnika
+                    break; // Prekidamo petlju jer smo pronašli korisnika
+                }
+            }
+
+            if (pom1)
+            {
+                pom = true; // Postavljamo na true na početku jer smo pretpostavili uspeh
+                foreach (Caj caj in lista)
+                {
+                    if (this.cajRepository.DeleteCaj(caj) <= 0)
+                    {
+                        pom = false; // Postavljamo na false ako brisanje nije uspelo
+                        break; // Prekidamo petlju jer ne želimo nastaviti ako nešto nije u redu
+                    }
+                }
+            }
+            else
+            {
+                pom = false; // Postavljamo na false ako nismo pronašli korisnika sa dovoljno novca
+            }
+
+            return pom;
+        }
+
+
+        public virtual bool ObrisiKorpu()//*
+        {
+            List<Caj> lista = this.cajRepository.GetAllCaj();
+            foreach (Caj caj in lista) 
+                if (this.cajRepository.DeleteCaj(caj) <= 0)
+                    {
+                      return false;
+                    }
+            return true;
+        }
+
+
+        public virtual decimal UkupnaCena()//
+        {
+            decimal uk = 0;
+            List<Caj> lista= this.cajRepository.GetAllCaj();
+            foreach(Caj caj in lista)
+            {
+                uk += caj.Cena*caj.Kolicina;
+            }
+            return uk;
+        }
+
+
+
+
+
+    }
+}
