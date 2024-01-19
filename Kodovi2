@@ -1,0 +1,41 @@
+using DataLayer;
+using Shared.Interfaces;
+using Shared.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BusinessLayer
+{
+    public class ItemBusiness : IItemBusiness
+    {
+        private readonly IItemRepository itemRepository;
+
+        public ItemBusiness (IItemRepository itemRepository)
+        {
+            this.itemRepository = itemRepository;
+        }
+
+        public List<MagacinItem> GetAllItems()
+        {
+            return itemRepository.GetAllItems();
+        }
+
+        public string InsertItem(MagacinItem item) 
+        {
+            return itemRepository.InsertItem(item) > 0 ? "Uspešan unos!" : "Došlo je do greške!";
+        }
+
+        public bool UpdateItem(MagacinItem item)
+        {
+            return itemRepository.UpdateItem(item) > 0;
+        }
+
+        public string DeleteItem(int id)
+        {
+            return itemRepository.DeleteItem(id) > 0 ? "Podatak obrisan!" : "Došlo je do greške!";
+        }
+    }
+}
