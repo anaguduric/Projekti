@@ -1,0 +1,99 @@
+using Shared.Interfaces;
+using Shared.Models;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataLayer
+{
+    // Prve dve metode su u odnosu na v1 izmenjene prema VS IntelliSense sugestiji:
+    // "Object initialization can be simplified", a takav pristup se često može videti
+    // u primrima, tutorijalima, pa čak i zvaničnoj MS dokumentaciji
+    public class ItemRepository : IItemRepository
+    {
+        public List<MagacinItem> GetAllItems()
+        {
+            using (SqlConnection sqlConnection = new SqlConnection(Constants.connectionString))
+            {
+                sqlConnection.Open();
+
+                SqlCommand sqlCommand = new SqlCommand
+                {
+                    Connection = sqlConnection,
+                    CommandText = "SELECT * FROM MagacinItems"
+                };
+
+                SqlDataReader dataReader = sqlCommand.ExecuteReader();
+
+                List<MagacinItem> listOfMaagacinItems = new List<MagacinItem>();
+
+                while (dataReader.Read())
+                {
+                    MagacinItem magacinItem = new MagacinItem
+                    {
+                        Id = Convert.ToInt32(dataReader.GetInt32(0)),
+                        Name = dataReader.GetString(1),
+                        Price = Convert.ToDecimal(dataReader.GetDecimal(2)),
+                        Discount = Convert.ToInt32(dataReader.GetInt32(3))
+                    };
+
+                    listOfMaagacinItems.Add(magacinItem);
+                }
+
+                return listOfMaagacinItems;
+            }
+        }
+
+        public int InsertItem(MagacinItem magacinItem)
+        {
+            using (SqlConnection sqlConnection = new SqlConnection(Constants.connectionString))
+            {
+                sqlConnection.Open();
+
+                SqlCommand sqlCommand = new SqlCommand {
+                    Connection = sqlConnection,
+                    CommandText = string.Format("INSERT INTO MagacinItems Values ('{0}', {1}, {2})",
+                    magacinItem.Name, magacinItem.Price, magacinItem.Discount)
+                    };
+
+                return sqlCommand.ExecuteNonQuery();
+            }
+        }
+
+        public int UpdateItem(MagacinItem magacinItem)
+        {
+            using (SqlConnection sqlConnection = new SqlConnection(Constants.connectionString))
+            {
+                sqlConnection.Open();
+
+                SqlCommand sqlCommand = new SqlCommand
+                {
+                    Connection = sqlConnection,
+                    CommandText = string.Format("Update MagacinItems SET Name='{0}', Price={1}, Discount={2} WHERE Id={3}",
+                    magacinItem.Name, magacinItem.Price, magacinItem.Discount,magacinItem.Id)
+                };
+
+                return sqlCommand.ExecuteNonQuery();
+            }
+        }
+
+        public int DeleteItem(int id)
+        {
+            using (SqlConnection sqlConnection = new SqlConnection(Constants.connectionString))
+            {
+                sqlConnection.Open();
+
+                SqlCommand sqlCommand = new SqlCommand
+                {
+                    Connection = sqlConnection,
+                    CommandText = string.Format("DELETE FROM MagacinItems WHERE Id={0}",id)
+                };
+
+                return sqlCommand.ExecuteNonQuery();
+            }
+        }
+    }
+}
